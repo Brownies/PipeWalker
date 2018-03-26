@@ -1,4 +1,5 @@
-import scala.annotation.switch
+import scala.volatile
+import scala.math.max
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.Set
 import scala.collection.parallel.mutable.ParSeq
@@ -19,20 +20,33 @@ class PipeWalker {
   // TODO: Add some private methods and modify longestPipe to solve the problem
   def longestPipe(inputText: String): Int = {
     val (grid, startPositions) = init(inputText)  
-    return dfs(grid, startPositions.par)
+    return dfs(grid, startPositions/*.par*/)
   }
 
+ 
+  case class Node(piece: Char, neighbours: List[Point]) {
+    def toString() = piece.toString()
+    def mkString() = toString()
+  }
   
-  private class Node(piece: Char, neighbours: List[Point]) {}
   
-  
-  private def dfs(grid: Array[Array[Node]], startPositions: ParSeq[Point]):Int = {
-    val visited = Array.fill[Boolean](grid.length, grid(0).length)(false)
-    var longestPath = 0
+  private def dfs(grid: Array[Array[Node]], startPositions: Buffer[Point]):Int = {
+    @volatile var longestPath = 0
     
-    //startPositions.foreach
-    def inner(grid: Array[Array[Node]], visited: Set[Node], currentNode: Node, depth: Int) = {
+    startPositions.foreach(p => inner(grid, Set(p), grid(p.y)(p.x), 1))
+    
+    def inner(grid: Array[Array[Node]], visited: Set[Point], currentNode: Node, depth: Int): Unit = {
       
+      //println(currentNode.piece)
+      if (currentNode.piece == '#') {
+        longestPath = max(longestPath, depth)
+      }
+      
+      for (neighbour <- currentNode.neighbours) {
+        if (!visited.contains(neighbour)) {
+          inner(grid, visited + neighbour, grid(neighbour.y)(neighbour.x), depth+1)
+        }
+      }
     }
     return longestPath
   }
@@ -102,11 +116,15 @@ object TestCases {
     "     |     \n" +
     " #-# +---# "
 
+  private val level4 =
+    "#++#"
+    
   val tests = List(
     TestCase("", 0),
-    TestCase(level1, 9),
-    TestCase(level2, 6),
-    TestCase(level3, 11)
+    //TestCase(level1, 9),
+    //TestCase(level2, 6),
+    //TestCase(level3, 11),
+    TestCase(level4, 3)
   )
 }
 
