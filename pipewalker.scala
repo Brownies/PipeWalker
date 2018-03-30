@@ -2,7 +2,6 @@ import scala.volatile
 import scala.math.max
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.Set
-import scala.collection.parallel.mutable.ParSeq
 import java.awt.Point
 /*
  * Some assumptions:
@@ -19,7 +18,7 @@ import java.awt.Point
 class PipeWalker {
   def longestPipe(inputText: String): Int = {
     val (grid, startPositions) = init(inputText)  
-    return dfs(grid, startPositions/*.par*/)
+    return dfs(grid, startPositions)
   }
 
  
@@ -32,12 +31,12 @@ class PipeWalker {
   private def dfs(grid: Array[Array[Node]], startPositions: Buffer[Point]):Int = {
     @volatile var longestPath = 0
     
-    //startPositions.foreach(p => inner(grid, Set(p), grid(p.y)(p.x), 1))
-    for (p <- startPositions) {
+    startPositions.par.foreach(p => inner(grid, Set(p), grid(p.y)(p.x), 1))
+    //for (p <- startPositions) {
       //println("starting search at : " +p.y + "," + p.x)
-      inner(grid, Set(p), grid(p.y)(p.x), 1)
+    //  inner(grid, Set(p), grid(p.y)(p.x), 1)
       //println("\n\n\n")
-    }
+    //}
     
     def inner(grid: Array[Array[Node]], visited: Set[Point], currentNode: Node, depth: Int): Unit = {
       //println("depth: " + depth)
@@ -140,7 +139,7 @@ object TestCases {
   private val level6 =
     "#-|\n" + 
     "  #"
-  private val level999 = //perf test
+  private val level999 = //parallelization test
     "##########\n" + 
     "##########\n" + 
     "##########\n" + 
