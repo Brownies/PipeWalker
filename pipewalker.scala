@@ -105,7 +105,6 @@ class PipeWalker {
 case class TestCase(testInput: String, expectedLength: Int)
 
 object TestCases {
-  // TODO: You probably want to add more test cases here
 
   private val level0 =
     "#"
@@ -150,6 +149,14 @@ object TestCases {
     "----|   \n" +
     "#------#"
     
+  private val level9 =
+    "#---+--+\n" +
+    "   |+--+\n" +
+    "--------"
+    
+  private val level10 =
+    "sdf_<>g++-"
+    
   private val level999 = //parallelization test
     "##########\n" + 
     "##########\n" + 
@@ -184,7 +191,9 @@ object TestCases {
     TestCase(level5, 9),
     TestCase(level6, 4),
     TestCase(level7, 5),
-    TestCase(level8, 24)
+    TestCase(level8, 24),
+    TestCase(level9, 1),
+    TestCase(level10, 0)
     
     //TestCase(level999, 100),
     //TestCase(level9000, 100)
