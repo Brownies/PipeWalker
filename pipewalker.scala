@@ -2,6 +2,7 @@ import scala.volatile
 import scala.math.max
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.Set
+import scala.collection.parallel.mutable.ParSeq
 import java.awt.Point
 /*
  * Some assumptions:
@@ -22,9 +23,8 @@ class PipeWalker {
   }
 
  
-  case class Node(piece: Char, neighbours: List[Point]) {
+  case class Node(piece: Char, neighbours: ParSeq[Point]) {
     override def toString() = piece.toString()
-    //def mkString() = toString()
   }
   
   
@@ -48,6 +48,14 @@ class PipeWalker {
       //println("number of neighbours: " + currentNode.neighbours.length.toString())
       //println("neighbours are: " + currentNode.neighbours.mkString(" "))
       //println("visited nodes are: " + visited.mkString(""))
+      
+      currentNode.neighbours.foreach(neighbour => {
+        if (!visited.contains(neighbour)) {
+          inner(grid, visited + neighbour, grid(neighbour.y)(neighbour.x), depth+1)
+        }
+      })
+      
+      /*
       for (neighbour <- currentNode.neighbours) {
         if (!visited.contains(neighbour)) {
           //println("recursing to: " + neighbour.y.toString() + "," + neighbour.x.toString())
@@ -55,13 +63,14 @@ class PipeWalker {
           //println("return from recursion at depth " + depth)
         }
       }
+      */
     }
     return longestPath
   }
   
   private def init(in: String): (Array[Array[Node]], Buffer[Point]) = {
     val arr = in.split("\n")
-    val emptyNode = new Node(' ', List())
+    val emptyNode = new Node(' ', ParSeq())
     var grid = Array.fill[Node](arr.length, arr(0).length)(emptyNode)
     val startPositions: Buffer[Point] = Buffer()
     
@@ -86,17 +95,17 @@ class PipeWalker {
       }
     }
     
-    def getHorizontalNeighbours(y: Int, x: Int):List[Point] = {
+    def getHorizontalNeighbours(y: Int, x: Int): ParSeq[Point] = {
       val ret = Buffer[Point]()
       if (x-1 >= 0 && x < arr(0).length && arr(y)(x-1) != ' ') {ret.append(new Point(x-1, y))}
       if (x >= 0 && x+1 < arr(0).length && arr(y)(x+1) != ' ') {ret.append(new Point(x+1, y))}
-      return ret.toList
+      return ret.par
     }
-    def getVerticalNeighbours(y: Int, x: Int):List[Point] = {
+    def getVerticalNeighbours(y: Int, x: Int): ParSeq[Point] = {
       val ret = Buffer[Point]()
       if (y-1 >= 0 && y < arr.length && arr(y-1)(x) != ' ') {ret.append(new Point(x, y-1))}
       if (y >= 0 && y+1 < arr.length && arr(y+1)(x) != ' ') {ret.append(new Point(x, y+1))}
-      return ret.toList
+      return ret.par
     }
     
     return (grid, startPositions)
@@ -139,6 +148,19 @@ object TestCases {
   private val level6 =
     "#-|\n" + 
     "  #"
+    
+  private val level7 =
+    "#---# #---#\n" + 
+    "-----+-----\n" + 
+    "#---# #---#"
+    
+  private val level8 =
+    "+---+ ##\n" +
+    "##  | | \n" +
+    "# |-#-+ \n" +
+    "----|   \n" +
+    "#------#"
+    
   private val level999 = //parallelization test
     "##########\n" + 
     "##########\n" + 
@@ -151,6 +173,18 @@ object TestCases {
     "##########\n" + 
     "##########\n"
     
+  private val level9000 = //inner() parallelization test
+    "#+++++++++\n" +
+    "++++++++++\n" +
+    "++++++++++\n" +
+    "++++++++++\n" +
+    "++++++++++\n" +
+    "++++++++++\n" +
+    "++++++++++\n" +
+    "++++++++++\n" +
+    "++++++++++\n" +
+    "+++++++++#"
+
   val tests = List(
     TestCase("", 0),
     TestCase(level0, 1),
@@ -159,7 +193,11 @@ object TestCases {
     TestCase(level3, 11),
     TestCase(level4, 6),
     TestCase(level5, 9),
-    //TestCase(level999, 100)
+    TestCase(level6, 4),
+    TestCase(level7, 5),
+    TestCase(level8, 24),
+    //TestCase(level999, 100),
+    //TestCase(level9000, 100)
   )
 }
 
