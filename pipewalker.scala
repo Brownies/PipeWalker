@@ -8,8 +8,6 @@ import java.awt.Point
  * Some assumptions:
  * Every line in the input string is of equal length, i.e when split by '/n' the result is a rectangular 2D array.
  * 
- * Only the space character (' ', ASCII 0x20) will be used to denote empty or inaccessible tiles.
- * 
  * The graph is directed and one-way connections are possible. Consider the following input:
  * 		"#-|\n" +
  * 		"  #"
@@ -28,65 +26,55 @@ class PipeWalker {
   }
   
   
+  object Piece extends Enumeration {
+    type Piece = Value
+    val EMPTY = ' '
+    val HORIZONTAL = '-'
+    val VERTICAL = '|'
+    val COMBO = '+'
+    val END = '#'
+  }
+  
+  
   private def dfs(grid: Array[Array[Node]], startPositions: Buffer[Point]):Int = {
     @volatile var longestPath = 0
     
     startPositions.par.foreach(p => inner(grid, Set(p), grid(p.y)(p.x), 1))
-    //for (p <- startPositions) {
-      //println("starting search at : " +p.y + "," + p.x)
-    //  inner(grid, Set(p), grid(p.y)(p.x), 1)
-      //println("\n\n\n")
-    //}
     
     def inner(grid: Array[Array[Node]], visited: Set[Point], currentNode: Node, depth: Int): Unit = {
-      //println("depth: " + depth)
-      //println(currentNode.piece)
-      if (currentNode.piece == '#') {
-        //println("found endpiece")
+      if (currentNode.piece == Piece.END) {
         longestPath = max(longestPath, depth)
       }
-      //println("number of neighbours: " + currentNode.neighbours.length.toString())
-      //println("neighbours are: " + currentNode.neighbours.mkString(" "))
-      //println("visited nodes are: " + visited.mkString(""))
       
       currentNode.neighbours.foreach(neighbour => {
         if (!visited.contains(neighbour)) {
           inner(grid, visited + neighbour, grid(neighbour.y)(neighbour.x), depth+1)
         }
       })
-      
-      /*
-      for (neighbour <- currentNode.neighbours) {
-        if (!visited.contains(neighbour)) {
-          //println("recursing to: " + neighbour.y.toString() + "," + neighbour.x.toString())
-          inner(grid, visited + neighbour, grid(neighbour.y)(neighbour.x), depth+1)
-          //println("return from recursion at depth " + depth)
-        }
-      }
-      */
     }
     return longestPath
   }
   
+  
   private def init(in: String): (Array[Array[Node]], Buffer[Point]) = {
     val arr = in.split("\n")
-    val emptyNode = new Node(' ', ParSeq())
-    var grid = Array.fill[Node](arr.length, arr(0).length)(emptyNode)
+    val emptyNode = new Node(Piece.EMPTY, ParSeq())
+    val grid = Array.fill[Node](arr.length, arr(0).length)(emptyNode)
     val startPositions: Buffer[Point] = Buffer()
     
     for (y <- 0 until arr.length) {
       for (x <- 0 until arr(0).length) {
         arr(y)(x)  match {
-          case ' ' => 
+          case Piece.EMPTY => 
             
-          case '-' => grid(y)(x) = new Node('-', getHorizontalNeighbours(y, x))
+          case Piece.HORIZONTAL => grid(y)(x) = new Node(Piece.HORIZONTAL, getHorizontalNeighbours(y, x))
           
-          case '|' => grid(y)(x) = new Node('|', getVerticalNeighbours(y, x))
+          case Piece.VERTICAL => grid(y)(x) = new Node(Piece.VERTICAL, getVerticalNeighbours(y, x))
           
-          case '+' => grid(y)(x) = new Node('+', getHorizontalNeighbours(y, x) ++ getVerticalNeighbours(y, x))
+          case Piece.COMBO => grid(y)(x) = new Node(Piece.COMBO, getHorizontalNeighbours(y, x) ++ getVerticalNeighbours(y, x))
           
-          case '#' => {
-            grid(y)(x) = new Node('#', getHorizontalNeighbours(y, x) ++ getVerticalNeighbours(y, x))
+          case Piece.END => {
+            grid(y)(x) = new Node(Piece.END, getHorizontalNeighbours(y, x) ++ getVerticalNeighbours(y, x))
             startPositions.append(new Point(x, y))
           }
           
@@ -97,14 +85,15 @@ class PipeWalker {
     
     def getHorizontalNeighbours(y: Int, x: Int): ParSeq[Point] = {
       val ret = Buffer[Point]()
-      if (x-1 >= 0 && x < arr(0).length && arr(y)(x-1) != ' ') {ret.append(new Point(x-1, y))}
-      if (x >= 0 && x+1 < arr(0).length && arr(y)(x+1) != ' ') {ret.append(new Point(x+1, y))}
+      if (x-1 >= 0 && x < arr(0).length && arr(y)(x-1) != Piece.EMPTY) {ret.append(new Point(x-1, y))}
+      if (x >= 0 && x+1 < arr(0).length && arr(y)(x+1) != Piece.EMPTY) {ret.append(new Point(x+1, y))}
       return ret.par
     }
+    
     def getVerticalNeighbours(y: Int, x: Int): ParSeq[Point] = {
       val ret = Buffer[Point]()
-      if (y-1 >= 0 && y < arr.length && arr(y-1)(x) != ' ') {ret.append(new Point(x, y-1))}
-      if (y >= 0 && y+1 < arr.length && arr(y+1)(x) != ' ') {ret.append(new Point(x, y+1))}
+      if (y-1 >= 0 && y < arr.length && arr(y-1)(x) != Piece.EMPTY) {ret.append(new Point(x, y-1))}
+      if (y >= 0 && y+1 < arr.length && arr(y+1)(x) != Piece.EMPTY) {ret.append(new Point(x, y+1))}
       return ret.par
     }
     
@@ -195,7 +184,8 @@ object TestCases {
     TestCase(level5, 9),
     TestCase(level6, 4),
     TestCase(level7, 5),
-    TestCase(level8, 24),
+    TestCase(level8, 24)
+    
     //TestCase(level999, 100),
     //TestCase(level9000, 100)
   )
