@@ -1,0 +1,1 @@
+A small longest-path puzzle I solved with scala. See pipewalker.scala for my solution, instructions.txt for the instructions and original.scala for the base code.
