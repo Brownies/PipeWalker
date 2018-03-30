@@ -1,0 +1,81 @@
+= Pipes =
+
+An exercise in functional style JavaScript, Scala and Clean Code.
+
+
+== The problem ==
+
+Implement a piece of software that counts the longest possible route
+one can take through the pipes without stepping twice in the same spot.
+
+Pipes are located in a two-dimensional grid and they are comprised of
+four kinds of pieces:
+ - ends '#'
+ - horizontal pipes '-'
+ - vertical pipes '|'
+ - and crossings '+'
+
+All types of pieces count as one step each. A route starts by stepping
+into the pipes through an end and exiting through another.
+
+
+== The solution ==
+
+Your code is expected to expose a `function longestPipe(inputText)`.
+
+(LEVEL 1) As an input, it will receive a string like the following:
+'  +--+   \n' +
+'#-+  |   \n' +
+'     #   '
+The length of this pipe (and the expected return value) is 9.
+
+(LEVEL 2) There can be multiple pipes on the grid. For example:
+' #----#   \n' +
+'          \n' +
+' #--#     '
+The length of the longest pipe on the grid is 6.
+
+(LEVEL 3) The pipes can also have branches. For example:
+'   #-+---# \n' +
+'     |     \n' +
+' #-# +---# '
+The length of the longest route through the pipes is 11.
+
+If you keep your code clean, moving up the levels will not be too hard.
+
+
+== Details ==
+
+The pipe system can have loops, but the rule of not stepping twice on the
+same spot prevents the code from looping forever.
+
+The grids are assumed to be small enough to allow for recursive solutions.
+
+You are allowed to use the Underscore.js library (http://underscorejs.org/),
+which brings many functional programming features from Scala to JS.
+
+The actual reviewing of the solutions involves running test cases not
+mentioned in this document. You are allowed, and should, test your own
+code more carefully than just using the given test cases.
+
+
+== Development environment ==
+
+We have set up a ready development environment on JSFiddle:
+https://jsfiddle.net/mq9p1kd3/2/#fork
+
+Using this link you can start hacking immediately.
+
+
+== Scala version ==
+
+You can also implement your solution in Scala. In this case the solution
+should be runnable on https://ideone.com
+
+The solution should expose an implementation of:
+class PipeWalker {
+  def longestPipe(inputText: String): Int = ???
+}
+
+We have set up a development environment on Ideone:
+https://ideone.com/fork/2MtmVd
